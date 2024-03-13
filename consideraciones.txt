@@ -1,0 +1,15 @@
+Se requiere realizar las siguientes actividades para el setup QA AWS OCR
+
+1.- Generar role para AWS  cloudformation que cubra los servicios AWS OCR 
+2.- Generar politica para role AWS Cloudformation para los servicios 
+  (AWS Cloudformation, KMS, SNS, SQS, S3, LAMBDA, DYNAMO, IAM, APIGATEWAY)
+3.- Descargar templates de AWS cloudformation en el ambiente de Dev 
+4.- Crear bucket en AWS S3 que va a contener  los templates de AWS cloudformation
+5.- Descargar el contenido del directorio de S3-cloudformation-Dev
+6.- Utilizar el endpoint de S3 para invocar los templates en AWS cloudformation
+7.- Generar de forma manual folders en buckets de S3.
+8.- Generar de forma manual - eventos de notificacion en buckets s3.
+9.- Generar de forma manual - triggers en lambdas de S3 smnyl-qa-aws-Lambda64base24
+10.- Generar de forma manual - AWS BACKUP PLAN del dynamoDB
+11.- Generar de forma manual - Human review
+12.- Generar de forma manual - template protection para los stacks de cloudformation.

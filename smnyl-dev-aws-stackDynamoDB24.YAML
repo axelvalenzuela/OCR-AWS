@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  TableName:
+    Type: String
+    Default: "smnyl-qa-aws-DynamoDBStorage24"
+  DocumentTypeAttribute:
+    Type: String
+    Default: "DocumentType"
+  DocumentIdAttribute:
+    Type: String
+    Default: "DocumentId"
+  DocumentTextAttribute:
+    Type: String
+    Default: "DocumentText"
+  MetadataAttribute:
+    Type: String
+    Default: "Metadata"
+  TimestampAttribute:
+    Type: String
+    Default: "Timestamp"
+
+Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TableName
+      AttributeDefinitions:
+        - AttributeName: !Ref DocumentTypeAttribute
+          AttributeType: S
+        - AttributeName: !Ref DocumentIdAttribute
+          AttributeType: S
+      KeySchema:
+        - AttributeName: !Ref DocumentTypeAttribute
+          KeyType: HASH
+        - AttributeName: !Ref DocumentIdAttribute
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      TimeToLiveSpecification:
+        AttributeName: !Ref TimestampAttribute
+        Enabled: true

@@ -1,0 +1,274 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  S3Bucket:
+    Type: String
+    Default: "smnyl-qa-aws-stackscloudformation23" 
+
+  LambdaIndexBase64:
+    Type: String
+    Description: Ruta del indice para lambda
+    Default: "initConfig-lambda/smnyl-qa-aws-Lambda64base24.zip" 
+     
+  LambdaIndexHumanReview:
+    Type: String
+    Description: Ruta del indice para lambda
+    Default: "initConfig-lambda/smnyl-qa-aws-Lambdahumanreview24.zip"
+  
+  LambdaIndexDynamo:
+    Type: String
+    Description: Ruta del indice para lambda
+    Default: "initConfig-lambda/smnyl-qa-aws-LambdaDynamoDB24.zip"
+
+  LambdaIndexComprehend:
+    Type: String
+    Description: Ruta del indice para lambda
+    Default: "initConfig-lambda/smnyl-qa-aws-LambdaComprehed24.zip"
+
+  LambdaIndexMulesoft:
+    Type: String
+    Description: Ruta del indice para lambda
+    Default: "initConfig-lambda/smnyl-qa-aws-LambdaMulesoft24.zip"
+  
+  LambdaIndexTextract:
+    Type: String
+    Description: Ruta del indice para lambda
+    Default: "initConfig-lambda/smnyl-qa-aws-LambdaTextract24.zip"
+
+Resources:
+# CommonPolicy
+ 
+  LambdaCommonPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: "LambdaCommonPolicy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "dynamodb:*"
+              - "lambda:*"
+              - "s3:*"
+              - "textract:*"
+              - "sns:*"
+              - "sqs:*"
+              - "sagemaker:*"
+              - "logs:*"
+              - "kms:*"
+            Resource: "*"
+
+# 64Base
+
+  Lambda64baseLogGroup24:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/lambda/smnyl-qa-aws-Lambda64base24"
+
+  Lambda64baseRole24:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "smnyl-qa-aws-IAMLambda64baseRole24"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref LambdaCommonPolicy
+
+  Lambda64base24:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "smnyl-qa-aws-Lambda64base24"
+      Runtime: "python3.10"
+      Handler: "index.handler" 
+      #Handler: !Sub ${LambdaIndexBase64}
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref LambdaIndexBase64
+      Role: !GetAtt Lambda64baseRole24.Arn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref S3Bucket
+          S3_OBJECT_KEY: !Ref LambdaIndexBase64
+
+# Human Review
+
+  LambdahumanreviewLogGroup24:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/lambda/smnyl-qa-aws-Lambdahumanreview24"
+
+  LambdahumanreviewRole24:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "smnyl-qa-aws-IAMLambdahumanreviewRole24"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref LambdaCommonPolicy
+
+  Lambdahumanreview24:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "smnyl-qa-aws-Lambdahumanreview24"
+      Runtime: "python3.10"
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref LambdaIndexHumanReview
+      Role: !GetAtt LambdahumanreviewRole24.Arn
+      Environment:
+        Variables: 
+          S3_BUCKET: !Ref S3Bucket
+          S3_OBJECT_KEY: !Ref LambdaIndexHumanReview
+ 
+# DynamoDB
+  LambdaDynamoDBLogGroup24:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/lambda/smnyl-qa-aws-LambdaDynamoDB24"
+
+  LambdaDynamoDBRole24:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "smnyl-qa-aws-IAMLambdaDynamoRole24"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref LambdaCommonPolicy
+
+  LambdaDynamoDB24:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "smnyl-qa-aws-LambdaDynamoDB24"
+      Runtime: "python3.10"
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref LambdaIndexDynamo
+      Role: !GetAtt LambdaDynamoDBRole24.Arn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref S3Bucket
+          S3_OBJECT_KEY: !Ref LambdaIndexDynamo
+
+
+# Comprehend
+  LambdaComprehedLogGroup24:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/lambda/smnyl-qa-aws-LambdaComprehed24"
+
+  LambdaComprehedRole24:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "smnyl-qa-aws-IAMLambdaComprehedRole24"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref LambdaCommonPolicy
+
+  LambdaComprehed24:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "smnyl-qa-aws-LambdaComprehed24"
+      Runtime: "python3.10"
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref LambdaIndexComprehend
+      Role: !GetAtt LambdaComprehedRole24.Arn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref S3Bucket
+          S3_OBJECT_KEY: !Ref LambdaIndexComprehend
+ 
+
+#  Mulesoft
+  LambdaMulesoftLogGroup24:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/lambda/smnyl-qa-aws-LambdaMulesoft24"
+
+  LambdaMulesoftRole24:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "smnyl-qa-aws-IAMLambdaMulesoftRole24"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref LambdaCommonPolicy
+
+  LambdaMulesoft24:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "smnyl-qa-aws-LambdaMulesoft24"
+      Runtime: "python3.10"
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref LambdaIndexMulesoft
+      Role: !GetAtt LambdaMulesoftRole24.Arn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref S3Bucket
+          S3_OBJECT_KEY: !Ref LambdaIndexMulesoft
+
+#  Textract
+  LambdaTextractLogGroup24:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/lambda/smnyl-qa-aws-LambdaTextract24"
+
+  LambdaTextractRole24:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "smnyl-qa-aws-IAMLambdaTextractRole24"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref LambdaCommonPolicy
+
+  LambdaTextract24:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "smnyl-qa-aws-LambdaTextract24"
+      Runtime: "python3.10"
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref LambdaIndexTextract
+      Role: !GetAtt LambdaTextractRole24.Arn
+      Environment:
+        Variables:
+          S3_BUCKET: !Ref S3Bucket
+          S3_OBJECT_KEY: !Ref LambdaIndexTextract
