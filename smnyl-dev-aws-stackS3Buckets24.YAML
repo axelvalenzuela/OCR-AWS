@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  UnqorkDocumentsBucketName:
+    Type: String
+    Default: smnyl-qa-aws-unqorkdocuments24
+    Description: Nombre del bucket S3 para documentos de Unqoark
+
+  S3DataStorageBucketName:
+    Type: String 
+    Default: smnyl-qa-aws-s3datastorage24
+    Description: Nombre del bucket S3 para almacenamiento de datos
+
+Resources:
+  # AWS Key Management Service (KMS) Key
+  KMSKey:
+    Type: 'AWS::KMS::Key'
+    Properties:
+      Description: 'KMS Key for S3DataStorageBucket'
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: 'key-default-1'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+              - 'kms:*' 
+            Resource: '*'
+
+  # S3 Buckets
+  UnqorkDocumentsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref UnqorkDocumentsBucketName
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldObjects
+            Status: Enabled
+            ExpirationInDays: 60
+            NoncurrentVersionExpirationInDays: 60
+
+  S3DataStorageBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref S3DataStorageBucketName
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms  # Utilizamos KMS como algoritmo de cifrado predeterminado
+              KMSMasterKeyID: !GetAtt KMSKey.Arn  # Referencia a la clave KMS
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldObjects
+            Status: Enabled
+            ExpirationInDays: 60
+            NoncurrentVersionExpirationInDays: 60

@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Stack para Dashboard de Monitoreo de OCR'
+
+Resources:
+  MonitoringDashboard:
+    Type: 'AWS::CloudWatch::Dashboard'
+    Properties:
+      DashboardName: 'Monitoring-Dashboard'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "text",
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 1,
+              "properties": {
+                "markdown": "# Monitoreo de OCR"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 1,
+              "width": 24,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/DynamoDB", "ProvisionedWriteCapacityUnits", "TableName", "OCR_TABLE"],
+                  ["AWS/DynamoDB", "ProvisionedReadCapacityUnits", "TableName", "OCR_TABLE"],
+                  ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", "TableName", "OCR_TABLE"],
+                  ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "OCR_TABLE"],
+                  ["AWS/DynamoDB", "ReadThrottleEvents", "TableName", "OCR_TABLE"],
+                  ["AWS/DynamoDB", "WriteThrottleEvents", "TableName", "OCR_TABLE"]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "us-east-1",
+                "title": "DynamoDB OCR_TABLE Metrics"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 8,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/S3", "BucketSizeBytes", "BucketName", "smnyl-dev-aws-s3datastorage23"],
+                  ["AWS/S3", "NumberOfObjects", "BucketName", "smnyl-dev-aws-s3datastorage23"]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "us-east-1",
+                "title": "S3 smnyl-dev-aws-s3datastorage23 Metrics"
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 8,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  ["AWS/S3", "BucketSizeBytes", "BucketName", "smnyl-dev-aws-unqorkdocuments23"],
+                  ["AWS/S3", "NumberOfObjects", "BucketName", "smnyl-dev-aws-unqorkdocuments23"]
+                ],
+                "period": 300,
+                "stat": "Average",
+                "region": "us-east-1",
+                "title": "S3 smnyl-dev-aws-unqorkdocuments23 Metrics"
+              }
+            }
+          ]
+        }

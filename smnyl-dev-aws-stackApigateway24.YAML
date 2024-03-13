@@ -1,0 +1,168 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Stack para API Gateway, Lambda y DynamoDB"
+
+# Definición de parámetros para personalizar la plantilla
+Parameters:
+  LambdaRoleName:
+    Type: String
+    Default: smnyl-qa-aws-IAMLambdaApiRole24
+    Description: Nombre del rol IAM para la funcion Lambda
+
+  LambdaFunctionName:
+    Type: String
+    Default: smnyl-qa-aws-LambdaApi24
+    Description: Nombre de la funcion Lambda
+
+  S3Bucket:
+    Type: String
+    Default: smnyl-qa-aws-stackscloudformation24
+    Description: Nombre del bucket S3 para el codigo de Lambda
+
+  S3Key:
+    Type: String
+    Default: initConfig-lambda/smnyl-qa-aws-LambdaApi24.zip
+    Description: Ruta del objeto en el bucket S3
+
+  ApiName:
+    Type: String
+    Default: smnyl-qa-aws-ocrApi24
+    Description: Nombre del API Gateway
+
+# Definición de recursos
+Resources:
+  # Definición del rol de IAM para la función Lambda
+  MyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref LambdaRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeTable
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource: "*"
+
+  # Definición de la función Lambda
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Handler: index.handler
+      Role: !GetAtt MyLambdaRole.Arn
+      Runtime: python3.10
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Ref S3Key
+
+  # Definición del API Gateway
+  MyApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Ref ApiName
+      Description: API para el servicio de OCR
+
+  # Definición del recurso en el API Gateway
+  MyApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MyApi
+      ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: 'OCR'
+
+  # Definición de los métodos en el API Gateway
+  MyApiMethodGET:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId: !GetAtt MyApiResource.ResourceId
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+
+  MyApiMethodPOST:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !GetAtt MyApiResource.ResourceId
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+
+  MyApiMethodPUT:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: PUT
+      ResourceId: !GetAtt MyApiResource.ResourceId
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+
+  MyApiMethodDELETE:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: DELETE
+      ResourceId: !GetAtt MyApiResource.ResourceId
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+
+  # Definición del despliegue del API Gateway
+  MyApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: [MyApiMethodGET, MyApiMethodPOST, MyApiMethodPUT, MyApiMethodDELETE]
+    Properties:
+      RestApiId: !Ref MyApi
+      StageName: envQA
+
+  # Definición del permiso de Lambda para el API Gateway
+  MyLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt MyLambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:us-east-1:481448867479:${MyApi}/*/*
